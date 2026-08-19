@@ -54,10 +54,11 @@ class ScreenCapturer:
         if self.fmt == "WEBP":
             img.save(buffer, format="WEBP", quality=self.quality, method=0) # method 0 is ultra fast
         else:
-            # Fast JPEG encoding: optimize=False avoids multi-pass delay
-            img.save(buffer, format="JPEG", quality=self.quality, optimize=False, subsampling=0)
+            # Fast standard JPEG encoding for universal compatibility with all Android decoders
+            img.save(buffer, format="JPEG", quality=self.quality, optimize=False)
             
         return buffer.getvalue()
+
 
     def set_quality(self, quality: int):
         self.quality = max(20, min(95, quality))

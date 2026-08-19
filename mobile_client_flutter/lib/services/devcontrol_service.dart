@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
 
 class DevControlService {
   WebSocketChannel? _channel;
@@ -30,12 +32,25 @@ class DevControlService {
       _channel!.stream.listen(
         (message) {
           if (message is String) {
-            final data = jsonDecode(message);
-            _handleJsonMessage(data);
+            try {
+              final data = jsonDecode(message);
+              _handleJsonMessage(data);
+            } catch (e) {
+              debugPrint("JSON Decode Error: $e");
+            }
           } else if (message is Uint8List) {
             _frameStreamController.add(message);
+          } else if (message is List<int>) {
+            _frameStreamController.add(Uint8List.fromList(message));
+          } else if (message is ByteBuffer) {
+            _frameStreamController.add(message.asUint8List());
+          } else if (message is ByteData) {
+            _frameStreamController.add(message.buffer.asUint8List());
+          } else {
+            debugPrint("Received unhandled binary frame type: ${message.runtimeType}");
           }
         },
+
         onError: (error) {
           debugPrint("WebSocket Error: $error");
           _authResultController.add({

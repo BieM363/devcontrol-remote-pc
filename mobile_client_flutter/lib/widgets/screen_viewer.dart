@@ -34,8 +34,24 @@ class ScreenViewer extends StatelessWidget {
           fit: BoxFit.contain,
           width: double.infinity,
           height: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.broken_image_rounded, color: Colors.orangeAccent, size: 32),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Format decoding: $error",
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
   }
 }
+
