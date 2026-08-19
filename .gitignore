@@ -3,10 +3,12 @@ PANDUAN_PEMULA_ANALOGI_LARAVEL.md
 
 # Large Binaries & Executables
 *.exe
+*.apk
 desktop_daemon/cloudflared.exe
 build/
 dist_desktop/
 dist_pc/
+
 
 # Python Cache & Virtual Environments
 __pycache__/
