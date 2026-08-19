@@ -76,36 +76,32 @@ class DevControlDesktopApp(ctk.CTk):
         )
         self.btn_copy_pin.pack(pady=(0, 10))
 
-        # CONNECTION INFO CARD
-        self.info_frame = ctk.CTkFrame(self, corner_radius=12, fg_color="#161B22")
+        # CLOUDFLARE REMOTE TUNNEL CARD
+        self.info_frame = ctk.CTkFrame(self, corner_radius=12, fg_color="#161B22", border_width=1, border_color="#30363D")
         self.info_frame.pack(fill="x", padx=16, pady=8)
 
-        self.lan_label = ctk.CTkLabel(self.info_frame, text=f"🌐 Local Wi-Fi WebSocket: ws://{get_local_ip()}:8081", font=ctk.CTkFont(size=13), text_color="#F0F6FC")
-        self.lan_label.pack(anchor="w", padx=16, pady=6)
+        self.tunnel_title = ctk.CTkLabel(self.info_frame, text="🌍 CLOUDFLARE REMOTE TUNNEL (4G/5G/Wi-Fi)", font=ctk.CTkFont(size=11, weight="bold"), text_color="#00F0FF")
+        self.tunnel_title.pack(anchor="w", padx=16, pady=(10, 4))
 
-        self.ngrok_label = ctk.CTkLabel(self.info_frame, text="🌍 4G/5G Remote Tunnel: Disabled", font=ctk.CTkFont(size=13), text_color="#8B949E")
-        self.ngrok_label.pack(anchor="w", padx=16, pady=(6, 2))
+        self.ngrok_label = ctk.CTkLabel(self.info_frame, text="Status: Menunggu server dinyalakan...", font=ctk.CTkFont(size=13), text_color="#8B949E")
+        self.ngrok_label.pack(anchor="w", padx=16, pady=(0, 6))
 
         self.btn_copy_tunnel = ctk.CTkButton(
             self.info_frame,
             text="📋 Salin URL Cloudflare Tunnel ke Clipboard",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            height=28,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            height=32,
             fg_color="#003847",
             hover_color="#005C75",
             text_color="#00F0FF",
             command=self._copy_tunnel_url
         )
-        self.btn_copy_tunnel.pack(anchor="w", padx=16, pady=(2, 6))
-
-        # NGROK / CLOUDFLARE TOGGLE
-        self.ngrok_switch = ctk.CTkSwitch(self.info_frame, text="Aktifkan Cloudflare Remote Tunnel Otomatis (Rekomendasi Bebas RTO)", command=self._toggle_ngrok)
-        self.ngrok_switch.select() # Enabled by default for reliable zero-config connections!
-        self.ngrok_switch.pack(anchor="w", padx=16, pady=6)
+        self.btn_copy_tunnel.pack(anchor="w", padx=16, pady=(2, 10))
 
         # CONTROLS
         self.ctrl_frame = ctk.CTkFrame(self, corner_radius=12, fg_color="#161B22")
         self.ctrl_frame.pack(fill="x", padx=16, pady=8)
+
 
         self.btn_start_stop = ctk.CTkButton(
             self.ctrl_frame,
@@ -190,8 +186,9 @@ class DevControlDesktopApp(ctk.CTk):
             pin = self.server.get_pin()
             self.pin_val_label.configure(text=pin)
 
-            if self.ngrok_switch.get() == 1:
-                threading.Thread(target=self._activate_tunnel, daemon=True).start()
+            # Automatically activate Cloudflare Remote Tunnel
+            threading.Thread(target=self._activate_tunnel, daemon=True).start()
+
 
             self.server_thread = threading.Thread(target=self.server.run, daemon=True)
             self.server_thread.start()

@@ -55,15 +55,20 @@ class DevControlService {
           debugPrint("WebSocket Error: $error");
           _authResultController.add({
             'success': false,
-            'message': 'Tidak dapat terhubung ke Server! Periksa IP / Tunnel.',
+            'message': 'Tidak dapat terhubung ke Server / Tunnel Cloudflare!',
           });
           disconnect();
         },
         onDone: () {
           debugPrint("WebSocket Connection Closed");
+          _authResultController.add({
+            'success': false,
+            'message': 'Koneksi ditutup oleh Server / Link Tunnel.',
+          });
           disconnect();
         },
       );
+
 
       // Send Auth Handshake
       final authPayload = {

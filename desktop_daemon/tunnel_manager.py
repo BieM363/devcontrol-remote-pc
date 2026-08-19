@@ -57,12 +57,13 @@ class TunnelManager:
             logger.info(f"Using Cloudflare executable: {exe_path}")
 
             self.cloudflared_proc = subprocess.Popen(
-                [exe_path, "tunnel", "--url", f"http://localhost:{self.port}"],
+                [exe_path, "tunnel", "--url", f"http://127.0.0.1:{self.port}"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
             )
+
 
             start_time = time.time()
             while time.time() - start_time < 15:

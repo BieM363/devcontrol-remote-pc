@@ -4,6 +4,7 @@ Author: BieM363 (https://github.com/BieM363)
 Repository: https://github.com/BieM363/devcontrol-remote-pc
 """
 
+import sys
 import asyncio
 import json
 import logging
@@ -12,9 +13,16 @@ import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import websockets
 
-from auth import AuthManager
-from screencap import ScreenCapturer
-from input_handler import InputHandler
+try:
+    from auth import AuthManager
+    from screencap import ScreenCapturer
+    from input_handler import InputHandler
+except ImportError:
+    from desktop_daemon.auth import AuthManager
+    from desktop_daemon.screencap import ScreenCapturer
+    from desktop_daemon.input_handler import InputHandler
+
+logger = logging.getLogger("DevControl.Server")
 
 def get_static_dir() -> str:
     if hasattr(sys, '_MEIPASS'):
@@ -80,10 +88,6 @@ class DevControlServer:
                 if not self.auth.validate_token(token):
                     logger.warning("Token invalidated during streaming loop.")
                     break
-                
-                # Check connection status
-                if websocket.closed:
-                    break
 
                 # Capture frame using native Windows GDI
                 frame_bytes = self.screencap.capture_frame()
@@ -94,11 +98,11 @@ class DevControlServer:
                 elapsed = asyncio.get_event_loop().time() - start_time
                 sleep_time = max(0.001, frame_interval - elapsed)
                 await asyncio.sleep(sleep_time)
-        except websockets.exceptions.ConnectionClosed:
+        except (websockets.exceptions.ConnectionClosed, websockets.exceptions.ConnectionClosedOK, websockets.exceptions.ConnectionClosedError):
             logger.info("Streaming ended: Client disconnected.")
-
         except Exception as e:
             logger.error(f"Error in streaming loop: {e}")
+
 
     async def _handle_message(self, websocket, message):
         """

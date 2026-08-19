@@ -1,19 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_all
-
-datas = [('D:/Ngoding/12. DevControl Cross-Network Native Remote PC Controller for Mobile Coding/desktop_daemon/cloudflared.exe', 'desktop_daemon')]
-binaries = []
-hiddenimports = []
-tmp_ret = collect_all('customtkinter')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
     ['D:/Ngoding/12. DevControl Cross-Network Native Remote PC Controller for Mobile Coding/desktop_app/gui.py'],
     pathex=['D:/Ngoding/12. DevControl Cross-Network Native Remote PC Controller for Mobile Coding/desktop_daemon'],
-    binaries=binaries,
-    datas=datas,
-    hiddenimports=hiddenimports,
+    binaries=[],
+    datas=[('C:/Users/kevin/AppData/Roaming/Python/Python314/site-packages/customtkinter', 'customtkinter'), ('D:/Ngoding/12. DevControl Cross-Network Native Remote PC Controller for Mobile Coding/desktop_daemon/static', 'desktop_daemon/static'), ('D:/Ngoding/12. DevControl Cross-Network Native Remote PC Controller for Mobile Coding/desktop_daemon/cloudflared.exe', 'desktop_daemon')],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

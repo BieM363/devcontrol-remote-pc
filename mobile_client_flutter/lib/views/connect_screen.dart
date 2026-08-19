@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/devcontrol_service.dart';
 import 'remote_control_screen.dart';
+
 
 class ConnectScreen extends StatefulWidget {
   const ConnectScreen({super.key});
@@ -61,21 +63,21 @@ class _ConnectScreenState extends State<ConnectScreen> {
 
     if (rawUrl.isEmpty) {
       setState(() {
-        _errorMessage = "Masukkan WebSocket URL / Cloudflare Tunnel";
+        _errorMessage = "Masukkan WebSocket URL atau Cloudflare Tunnel";
       });
       return;
     }
 
     if (pin.length != 6) {
       setState(() {
-        _errorMessage = "PIN harus 6 digit angka dari laptop (Cek layar PC)";
+        _errorMessage = "PIN harus 6 digit angka (Lihat di layar laptop)";
       });
       return;
     }
 
-    // Clean raw URL (remove angle brackets, quotes, whitespace, trailing slashes, http/https prefix)
+    // Clean raw URL without corrupting text field view
     rawUrl = rawUrl.replaceAll("<", "").replaceAll(">", "").replaceAll('"', '').replaceAll("'", "").trim();
-    rawUrl = rawUrl.replaceAll(RegExp(r'/+$'), ''); // Remove any trailing slashes
+    rawUrl = rawUrl.replaceAll(RegExp(r'/+$'), ''); // Strip trailing slashes
 
     if (rawUrl.startsWith("https://")) {
       rawUrl = rawUrl.replaceFirst("https://", "wss://");
@@ -88,7 +90,6 @@ class _ConnectScreenState extends State<ConnectScreen> {
         rawUrl = "ws://$rawUrl";
       }
     }
-    _urlController.text = rawUrl;
 
     setState(() {
       _isLoading = true;
@@ -103,7 +104,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
       if (mounted && _isLoading) {
         setState(() {
           _isLoading = false;
-          _errorMessage = "Koneksi RTO (Timeout)! Periksa apakah link tunnel di PC masih aktif atau coba gunakan IP Wi-Fi lokal.";
+          _errorMessage = "Koneksi RTO (Timeout)! Jika di Wi-Fi yang sama dengan PC, gunakan ws://[IP_PC]:8081";
         });
         _service.disconnect();
       }
@@ -136,11 +137,12 @@ class _ConnectScreenState extends State<ConnectScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = "Gagal terhubung! Pastikan format URL benar (contoh: wss://...trycloudflare.com)";
+          _errorMessage = "Gagal terhubung! Periksa kembali URL dan koneksi internet.";
         });
       }
     }
   }
+
 
 
   @override
@@ -197,17 +199,30 @@ class _ConnectScreenState extends State<ConnectScreen> {
                   // URL INPUT
                   TextField(
                     controller: _urlController,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
                     decoration: InputDecoration(
-                      labelText: "Daemon WebSocket / Cloudflare URL",
+                      labelText: "WebSocket URL / Cloudflare Tunnel",
                       labelStyle: const TextStyle(color: Colors.white54),
                       prefixIcon: const Icon(Icons.wifi_rounded, color: Color(0xFF00F0FF)),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.content_paste_rounded, color: Color(0xFF00F0FF), size: 20),
+                        tooltip: "Tempel URL dari Clipboard",
+                        onPressed: () async {
+                          final clipData = await Clipboard.getData('text/plain');
+                          if (clipData != null && clipData.text != null) {
+                            setState(() {
+                              _urlController.text = clipData.text!.trim();
+                            });
+                          }
+                        },
+                      ),
                       filled: true,
                       fillColor: Colors.black26,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
+
 
                   // PIN INPUT
                   TextField(

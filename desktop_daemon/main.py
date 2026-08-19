@@ -8,7 +8,17 @@ import sys
 import os
 import argparse
 import logging
+
+try:
+    if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+
 from colorama import init, Fore, Style
+
 
 from web_server import DevControlServer
 from tunnel_manager import TunnelManager, get_local_ip
