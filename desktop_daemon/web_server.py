@@ -73,11 +73,10 @@ class DevControlServer:
                 if websocket.closed:
                     break
 
-                # Offload screen capture to threadpool to avoid blocking asyncio event loop
-                loop = asyncio.get_running_loop()
-                frame_bytes = await loop.run_in_executor(None, self.screencap.capture_frame)
+                # Capture frame using native Windows GDI
+                frame_bytes = self.screencap.capture_frame()
                 
-                # Send frame
+                # Send binary JPEG frame over WebSocket
                 await websocket.send(frame_bytes)
                 
                 elapsed = asyncio.get_event_loop().time() - start_time
@@ -85,6 +84,7 @@ class DevControlServer:
                 await asyncio.sleep(sleep_time)
         except websockets.exceptions.ConnectionClosed:
             logger.info("Streaming ended: Client disconnected.")
+
         except Exception as e:
             logger.error(f"Error in streaming loop: {e}")
 
