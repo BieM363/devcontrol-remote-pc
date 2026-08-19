@@ -16,16 +16,28 @@ from auth import AuthManager
 from screencap import ScreenCapturer
 from input_handler import InputHandler
 
-logger = logging.getLogger("DevControl.Server")
+def get_static_dir() -> str:
+    if hasattr(sys, '_MEIPASS'):
+        p1 = os.path.join(sys._MEIPASS, "desktop_daemon", "static")
+        if os.path.exists(p1):
+            return p1
+        p2 = os.path.join(sys._MEIPASS, "static")
+        if os.path.exists(p2):
+            return p2
+    p3 = os.path.join(os.path.dirname(__file__), "static")
+    if os.path.exists(p3):
+        return p3
+    return "static"
 
 class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, directory=None, **kwargs):
-        static_dir = os.path.join(os.path.dirname(__file__), "static")
+        static_dir = get_static_dir()
         super().__init__(*args, directory=static_dir, **kwargs)
 
     def log_message(self, format, *args):
         # Suppress verbose standard HTTP request logs
         pass
+
 
 def start_http_server(host: str, port: int):
     httpd = HTTPServer((host, port), CustomHTTPRequestHandler)
