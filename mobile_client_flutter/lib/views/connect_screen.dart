@@ -68,13 +68,15 @@ class _ConnectScreenState extends State<ConnectScreen> {
 
     if (pin.length != 6) {
       setState(() {
-        _errorMessage = "PIN harus 6 digit angka dari laptop";
+        _errorMessage = "PIN harus 6 digit angka dari laptop (Cek layar PC)";
       });
       return;
     }
 
-    // Clean raw URL (remove angle brackets, quotes, whitespace, https/http prefix)
-    rawUrl = rawUrl.replaceAll("<", "").replaceAll(">", "").replaceAll('"', '').trim();
+    // Clean raw URL (remove angle brackets, quotes, whitespace, trailing slashes, http/https prefix)
+    rawUrl = rawUrl.replaceAll("<", "").replaceAll(">", "").replaceAll('"', '').replaceAll("'", "").trim();
+    rawUrl = rawUrl.replaceAll(RegExp(r'/+$'), ''); // Remove any trailing slashes
+
     if (rawUrl.startsWith("https://")) {
       rawUrl = rawUrl.replaceFirst("https://", "wss://");
     } else if (rawUrl.startsWith("http://")) {
@@ -96,12 +98,12 @@ class _ConnectScreenState extends State<ConnectScreen> {
     _authSubscription?.cancel();
     _timeoutTimer?.cancel();
 
-    // 8 Seconds Connection Timeout Safety
-    _timeoutTimer = Timer(const Duration(seconds: 8), () {
+    // 25 Seconds Connection Timeout for reliable 4G cellular & Cloudflare Tunnel handshakes
+    _timeoutTimer = Timer(const Duration(seconds: 25), () {
       if (mounted && _isLoading) {
         setState(() {
           _isLoading = false;
-          _errorMessage = "Koneksi RTO (Timeout)! Periksa URL / Tunnel.";
+          _errorMessage = "Koneksi RTO (Timeout)! Periksa apakah link tunnel di PC masih aktif atau coba gunakan IP Wi-Fi lokal.";
         });
         _service.disconnect();
       }
@@ -123,7 +125,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
           } else {
             setState(() {
               _isLoading = false;
-              _errorMessage = authResult['message'] ?? "PIN Keamanan Salah!";
+              _errorMessage = authResult['message'] ?? "PIN Keamanan Salah! Cek PIN terbaru di laptop.";
             });
             _service.disconnect();
           }
@@ -134,11 +136,12 @@ class _ConnectScreenState extends State<ConnectScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = "Gagal terhubung! Pastikan URL memiliki wss://";
+          _errorMessage = "Gagal terhubung! Pastikan format URL benar (contoh: wss://...trycloudflare.com)";
         });
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
