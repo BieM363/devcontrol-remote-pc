@@ -1,0 +1,24 @@
+name: devcontrol_mobile
+description: "DevControl Native Mobile Client for Remote PC Coding (ZTE Blade V50 Design optimized) - Developed by BieM363"
+publish_to: 'none'
+version: 1.2.0+2
+
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  web_socket_channel: ^2.4.0
+  google_fonts: ^6.1.0
+  shared_preferences: ^2.2.2
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

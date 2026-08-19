@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DevControl - Mobile Remote Controller (by BieM363)</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal-overlay">
+    <div class="glass-card auth-card">
+      <div class="app-brand">
+        <span class="icon">📱💻</span>
+        <h2>DevControl</h2>
+        <span class="badge">Crafted by BieM363</span>
+      </div>
+      <p class="subtitle">Enter 6-digit session PIN from Desktop Daemon</p>
+      
+      <div class="pin-container">
+        <input type="password" id="pinInput" maxlength="6" placeholder="• • • • • •" autocomplete="off" inputmode="numeric">
+      </div>
+      
+      <button id="connectBtn" class="btn btn-primary">
+        <span>Connect & Start Coding</span>
+      </button>
+
+      <div id="authError" class="auth-error hidden">Invalid PIN. Please check daemon output.</div>
+      
+      <div class="ws-host-input-group">
+        <label for="wsHostInput">WebSocket Host URL (Auto-detected):</label>
+        <input type="text" id="wsHostInput" placeholder="ws://192.168.1.X:8081">
+      </div>
+
+      <div class="author-tag">DevControl v1.2 • Developed by <strong>BieM363</strong></div>
+    </div>
+  </div>
+
+  <!-- MAIN REMOTE INTERFACE -->
+  <div id="appContainer" class="app-container hidden">
+    <!-- TOP STATUS BAR -->
+    <header class="top-bar glass-bar">
+      <div class="status-indicator">
+        <span class="status-dot online"></span>
+        <span id="connectionStatus">Connected</span>
+        <span class="brand-tag">BieM363</span>
+      </div>
+      
+      <div class="metrics">
+        <span id="fpsCounter" class="metric-tag">FPS: 0</span>
+        <span id="pingCounter" class="metric-tag">Ping: 0ms</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="toggleKeyboardBtn" class="btn-icon" title="Native Keyboard">⌨️</button>
+        <button id="toggleEditModeBtn" class="btn-icon" title="Toggle Selection Bar">✂️</button>
+        <button id="settingsBtn" class="btn-icon" title="Quality Settings">⚙️</button>
+        <button id="disconnectBtn" class="btn-icon danger" title="Disconnect">🔌</button>
+      </div>
+    </header>
+
+    <!-- HIDDEN INPUT FOR NATIVE KEYBOARD -->
+    <input type="text" id="hiddenKeyboardInput" class="hidden-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+    <!-- DISPLAY & TOUCHPAD WORKSPACE -->
+    <main class="viewport-area">
+      <div id="screenContainer" class="screen-container">
+        <canvas id="remoteCanvas"></canvas>
+        <div id="touchSurface" class="touch-surface"></div>
+      </div>
+    </main>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal-overlay hidden">
+      <div class="glass-card settings-card">
+        <h3>Stream Quality & Latency</h3>
+        <div class="setting-row">
+          <label>Target Resolution:</label>
+          <select id="resSelect">
+            <option value="540">540p (Ultra Low Latency - 4G/5G)</option>
+            <option value="720" selected>720p (Balanced - Recommended)</option>
+            <option value="1080">1080p (FHD Sharp Text - Wi-Fi)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>JPEG Compression Quality:</label>
+          <input type="range" id="qualitySlider" min="30" max="90" value="70">
+          <span id="qualityVal">70%</span>
+        </div>
+        <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+
+    <!-- DEVELOPER KEYPAD OVERLAY -->
+    <footer class="dev-keypad glass-bar">
+      <!-- ROW 1: PRIMARY SHORTCUTS & SYSTEM KEYS -->
+      <div class="keypad-row">
+        <button class="key-btn special" data-key="esc">Esc</button>
+        <button class="key-btn special" data-key="tab">Tab ⇥</button>
+        <button class="key-btn modifier toggleable" id="ctrlToggleBtn" data-modifier="ctrl">Ctrl</button>
+        <button class="key-btn modifier toggleable" id="altToggleBtn" data-modifier="alt">Alt</button>
+        <button class="key-btn modifier toggleable" id="shiftToggleBtn" data-modifier="shift">Shift</button>
+        <button class="key-btn action" data-shortcut="ctrl,s">💾 Save</button>
+        <button class="key-btn action" data-shortcut="f5">▶ Run</button>
+        <button class="key-btn action" data-shortcut="ctrl,`">💻 Term</button>
+      </div>
+
+      <!-- ROW 2: TEXT SELECTION & CLIPBOARD CONTROLS (NEW FEATURE) -->
+      <div class="keypad-row selection-row" id="selectionRow">
+        <button class="key-btn clip-btn" data-shortcut="ctrl,a" title="Select All (Ctrl+A)">🔲 Block All</button>
+        <button class="key-btn clip-btn" data-shortcut="ctrl,c" title="Copy (Ctrl+C)">📋 Copy</button>
+        <button class="key-btn clip-btn" data-shortcut="ctrl,v" title="Paste (Ctrl+V)">📥 Paste</button>
+        <button class="key-btn clip-btn" data-shortcut="ctrl,x" title="Cut (Ctrl+X)">✂️ Cut</button>
+        <button class="key-btn sel-nav" data-shortcut="shift,left" title="Block Left (Shift+←)">Sel ←</button>
+        <button class="key-btn sel-nav" data-shortcut="shift,right" title="Block Right (Shift+→)">Sel →</button>
+        <button class="key-btn sel-nav" data-shortcut="shift,up" title="Block Up (Shift+↑)">Sel ↑</button>
+        <button class="key-btn sel-nav" data-shortcut="shift,down" title="Block Down (Shift+↓)">Sel ↓</button>
+      </div>
+
+      <!-- ROW 3: CODE SYMBOLS -->
+      <div class="keypad-row symbols-row">
+        <button class="key-btn symbol" data-type="{">{</button>
+        <button class="key-btn symbol" data-type="}">}</button>
+        <button class="key-btn symbol" data-type="[">[</button>
+        <button class="key-btn symbol" data-type="]">]</button>
+        <button class="key-btn symbol" data-type="(">(</button>
+        <button class="key-btn symbol" data-type=")">)</button>
+        <button class="key-btn symbol" data-type=";">;</button>
+        <button class="key-btn symbol" data-type="=>">=></button>
+        <button class="key-btn symbol" data-type="|">|</button>
+        <button class="key-btn symbol" data-type="~">~</button>
+        <button class="key-btn symbol" data-type="=">=</button>
+        <button class="key-btn symbol" data-type="!">!</button>
+        <button class="key-btn symbol" data-type="&quot;">"</button>
+        <button class="key-btn symbol" data-type="'">'</button>
+        <button class="key-btn symbol" data-type=":">:</button>
+      </div>
+
+      <!-- ROW 4: ARROW NAVIGATION & EDITING -->
+      <div class="keypad-row">
+        <button class="key-btn special" data-key="backspace">⌫ Del</button>
+        <button class="key-btn nav" data-key="left">←</button>
+        <button class="key-btn nav" data-key="up">↑</button>
+        <button class="key-btn nav" data-key="down">↓</button>
+        <button class="key-btn nav" data-key="right">→</button>
+        <button class="key-btn action" data-shortcut="ctrl,z">↩ Undo</button>
+        <button class="key-btn action" data-shortcut="ctrl,f">🔍 Find</button>
+        <button class="key-btn special" data-key="enter">↵ Enter</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

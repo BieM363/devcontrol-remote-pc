@@ -1,0 +1,34 @@
+# Private Local Notes (Excluded from Git as requested)
+PANDUAN_PEMULA_ANALOGI_LARAVEL.md
+
+# Large Binaries & Executables
+*.exe
+desktop_daemon/cloudflared.exe
+build/
+dist_desktop/
+dist_pc/
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+env/
+venv/
+
+# Flutter / Dart Build Files
+mobile_client_flutter/build/
+mobile_client_flutter/.dart_tool/
+mobile_client_flutter/.flutter-plugins
+mobile_client_flutter/.flutter-plugins-dependencies
+mobile_client_flutter/.packages
+mobile_client_flutter/.pub-cache/
+mobile_client_flutter/.pub/
+
+# IDE & Editor Configs
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
