@@ -281,7 +281,7 @@ class _ConnectScreenState extends State<ConnectScreen> {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    "DevControl v1.2 • Crafted with ❤️ by BieM363",
+                    "DevControl v2.0 • Crafted with ❤️ by BieM363",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white38,

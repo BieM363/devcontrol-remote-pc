@@ -74,14 +74,22 @@ class InputHandler:
 
     def handle_mouse_move(self, nx: float, ny: float):
         x, y = self._normalize_coords(nx, ny)
-        self.mouse.position = (x, y)
+        try:
+            import ctypes
+            ctypes.windll.user32.SetCursorPos(x, y)
+        except Exception:
+            self.mouse.position = (x, y)
 
     def handle_mouse_move_rel(self, dx: float, dy: float):
         try:
             cx, cy = self.mouse.position
-            nx = max(0, min(self.screen_width, cx + dx))
-            ny = max(0, min(self.screen_height, cy + dy))
-            self.mouse.position = (int(nx), int(ny))
+            nx = int(max(0, min(self.screen_width, cx + dx)))
+            ny = int(max(0, min(self.screen_height, cy + dy)))
+            try:
+                import ctypes
+                ctypes.windll.user32.SetCursorPos(nx, ny)
+            except Exception:
+                self.mouse.position = (nx, ny)
         except Exception:
             pass
 

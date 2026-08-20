@@ -19,7 +19,7 @@
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Features (v2.0)
 
 1. **Ultra-Low Latency Screen Streaming (50+ FPS)**:
    - Powered by native **Windows GDI Direct Hardware Capture** (`user32.dll` + `gdi32.dll` `BitBlt` with `0x00CC0020`).
@@ -27,33 +27,42 @@
    - Dynamic JPEG subsampling (~15–25 KB per frame) perfectly optimized for Telkomsel 4G cellular networks without lag buildup.
    - Zero-backpressure frame skipping over WebSockets to prevent frame queuing.
 
-2. **Text Selection & Clipboard Toolbar**:
+2. **🔍 Interactive Zoom & Pan Screen Mode (NEW in v2.0)**:
+   - Enlarge, shrink, and pan across the entire PC desktop with smooth multi-touch gestures (Pinch to Zoom 1.0x–6.0x & Drag to Pan).
+   - Easily read tiny editor text, code symbols, terminal outputs, and menus from afar without eye strain.
+   - Return to Cursor Mode at any zoomed level with 100% pixel-perfect touch coordinate precision.
+
+3. **🖱️ Dedicated Mouse Click Controls (NEW in v2.0)**:
+   - 🖱️ **Klik Kiri (Left Click)**
+   - 🔘 **Klik Tengah (Middle Click / Scroll Wheel Click)**
+   - 🖱️ **Klik Kanan (Right Click / Context Menu)**
    - 🔲 **Block All / Select All** (`Ctrl+A`)
    - 📋 **Copy** (`Ctrl+C`)
    - 📥 **Paste** (`Ctrl+V`)
    - ✂️ **Cut** (`Ctrl+X`)
-   - 🔍 **Selection Navigation** (`Shift+←`, `Shift+→`, `Shift+↑`, `Shift+↓`)
-   - ⚡ **Interactive Shift/Ctrl/Alt Modifier Toggles**: Tap Shift to activate text block selection mode with normal arrow keys!
+   - ⚡ **Interactive Shift/Ctrl/Alt Modifier Toggles**: Tap Shift to activate text block selection mode (`Sel ←/↑/↓/→`) with normal arrow keys!
 
-3. **Seamless Cloudflare Zero-Config Tunneling**:
+4. **👆 Dual Touch Interaction Modes (Direct Touch & Virtual Trackpad)**:
+   - **Direct Touch (Sentuh Langsung)**: Tap / drag directly on the PC screen viewport to position cursor and trigger instant actions.
+   - **Virtual Trackpad (Trackpad Mouse)**: Glide your finger anywhere across the screen like a physical laptop touchpad for smooth, micro-precision cursor glide.
+   - Switch modes with 1-tap on the floating toolbar (`Icons.touch_app_rounded` / `Icons.mouse_rounded`).
+   - Powered by native Windows `SetCursorPos` API for 0ms latency hardware cursor updates.
+
+5. **Seamless Cloudflare Zero-Config Tunneling**:
    - Built-in `cloudflared` integration creates a secure public `wss://*.trycloudflare.com` tunnel in seconds.
    - 1-click clipboard URL copying on PC and 1-tap **📋 Tempel (Paste)** button on mobile.
    - Auto-cleans and sanitizes URLs to avoid cut-off links or trailing slash mismatches.
 
-4. **Developer Keypad & Symbols**:
+6. **Developer Keypad & Symbols**:
    - Fast touch keys for IDE shortcuts (`Ctrl`, `Alt`, `Shift`, `Tab`, `Esc`, `Save`, `Run F5`, `Terminal`).
    - Code symbols (`{`, `}`, `[`, `]`, `(`, `)`, `;`, `=>`, `|`, `"`, `'`).
    - Arrow keys, Backspace, Delete, Undo (`Ctrl+Z`), and Enter.
 
-5. **Virtual Touchpad & Multi-touch Gestures**:
-   - High-precision cursor tracking with 0ms `pyautogui` input execution.
-   - Single-tap left click, two-finger right click, two-finger code editor scrolling, and pinch zooming.
-
-6. **Dual Client Flexibility**:
+7. **Dual Client Flexibility**:
    - **Instant Web PWA**: Zero installation needed—open in Chrome/Edge on smartphone.
    - **Native Android App (Flutter)**: 90Hz smooth rendering, hardware haptics, and immersive fullscreen mode.
 
-7. **Session PIN Handshake**:
+8. **Session PIN Handshake**:
    - 6-digit session PIN authentication with rate-limiting security lockout against brute-force attempts.
 
 ---
@@ -65,7 +74,7 @@
 │   ├── main.py                     # CLI entry point with UTF-8 encoding configuration
 │   ├── web_server.py               # WebSocket & HTTP real-time server with backpressure protection
 │   ├── screencap.py                # High-speed Windows GDI BitBlt screen capture & compression engine
-│   ├── input_handler.py            # Zero-delay mouse/keyboard automation (pynput + pyautogui)
+│   ├── input_handler.py            # Zero-delay native mouse/keyboard automation (SetCursorPos + pynput)
 │   ├── auth.py                     # 6-digit session PIN & token manager with lockout protection
 │   ├── tunnel_manager.py           # Cloudflare & Ngrok remote tunnel manager (IPv4 target)
 │   ├── requirements.txt            # Python dependencies
@@ -87,7 +96,7 @@
 │
 ├── dist_pc/                        # Compiled Windows Standalone Executable
 ├── dist_desktop/                   # Compiled Windows Standalone Executable
-├── DevControl-Mobile-v1.2.apk      # Compiled Android Release APK
+├── DevControl-Mobile-v2.0.apk      # Compiled Android Release APK (v2.0)
 ├── build_exe.bat                   # 1-Click Desktop Executable Compiler
 ├── build_apk.bat                   # 1-Click Android Release APK Compiler
 └── README.md

@@ -1,7 +1,7 @@
 name: devcontrol_mobile
 description: "DevControl Native Mobile Client for Remote PC Coding (ZTE Blade V50 Design optimized) - Developed by BieM363"
 publish_to: 'none'
-version: 1.2.0+2
+version: 2.0.0+3
 
 
 environment:

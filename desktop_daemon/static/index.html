@@ -35,7 +35,7 @@
         <input type="text" id="wsHostInput" placeholder="ws://192.168.1.X:8081">
       </div>
 
-      <div class="author-tag">DevControl v1.2 • Developed by <strong>BieM363</strong></div>
+      <div class="author-tag">DevControl v2.0 • Developed by <strong>BieM363</strong></div>
     </div>
   </div>
 
@@ -56,6 +56,7 @@
 
       <div class="header-actions">
         <button id="toggleKeyboardBtn" class="btn-icon" title="Native Keyboard">⌨️</button>
+        <button id="toggleZoomBtn" class="btn-icon" title="Toggle Zoom & Pan Mode">🔍</button>
         <button id="toggleEditModeBtn" class="btn-icon" title="Toggle Selection Bar">✂️</button>
         <button id="settingsBtn" class="btn-icon" title="Quality Settings">⚙️</button>
         <button id="disconnectBtn" class="btn-icon danger" title="Disconnect">🔌</button>
@@ -108,16 +109,15 @@
         <button class="key-btn action" data-shortcut="ctrl,`">💻 Term</button>
       </div>
 
-      <!-- ROW 2: TEXT SELECTION & CLIPBOARD CONTROLS (NEW FEATURE) -->
+      <!-- ROW 2: TEXT CLIPBOARD & MOUSE CONTROLS (v2.0) -->
       <div class="keypad-row selection-row" id="selectionRow">
         <button class="key-btn clip-btn" data-shortcut="ctrl,a" title="Select All (Ctrl+A)">🔲 Block All</button>
         <button class="key-btn clip-btn" data-shortcut="ctrl,c" title="Copy (Ctrl+C)">📋 Copy</button>
         <button class="key-btn clip-btn" data-shortcut="ctrl,v" title="Paste (Ctrl+V)">📥 Paste</button>
         <button class="key-btn clip-btn" data-shortcut="ctrl,x" title="Cut (Ctrl+X)">✂️ Cut</button>
-        <button class="key-btn sel-nav" data-shortcut="shift,left" title="Block Left (Shift+←)">Sel ←</button>
-        <button class="key-btn sel-nav" data-shortcut="shift,right" title="Block Right (Shift+→)">Sel →</button>
-        <button class="key-btn sel-nav" data-shortcut="shift,up" title="Block Up (Shift+↑)">Sel ↑</button>
-        <button class="key-btn sel-nav" data-shortcut="shift,down" title="Block Down (Shift+↓)">Sel ↓</button>
+        <button class="key-btn mouse-btn" data-mouse="left" title="Left Click">🖱️ Klik Kiri</button>
+        <button class="key-btn mouse-btn" data-mouse="middle" title="Middle Click">🔘 Tengah</button>
+        <button class="key-btn mouse-btn" data-mouse="right" title="Right Click">🖱️ Klik Kanan</button>
       </div>
 
       <!-- ROW 3: CODE SYMBOLS -->

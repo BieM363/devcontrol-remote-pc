@@ -169,7 +169,7 @@ class _DeveloperKeypadState extends State<DeveloperKeypad> {
           ),
           const SizedBox(height: 3.0),
 
-          // ROW 2: TEXT SELECTION & CLIPBOARD CONTROLS (NEW FEATURE)
+          // ROW 2: TEXT CLIPBOARD & MOUSE CONTROLS (v2.0)
           if (_showSelectionRow) ...[
             Row(
               children: [
@@ -198,28 +198,22 @@ class _DeveloperKeypadState extends State<DeveloperKeypad> {
                   textColor: const Color(0xFFFF7675),
                 ),
                 _buildKeyButton(
-                  label: 'Sel ←',
-                  onTap: () => widget.service.sendShortcut(['shift', 'left']),
-                  backgroundColor: const Color(0xFF3D2C00),
-                  textColor: const Color(0xFFFFCC00),
+                  label: '🖱️ Kiri',
+                  onTap: () => widget.service.sendMouseClick(button: 'left', count: 1),
+                  backgroundColor: const Color(0xFF1A365D),
+                  textColor: const Color(0xFF90CDF4),
                 ),
                 _buildKeyButton(
-                  label: 'Sel →',
-                  onTap: () => widget.service.sendShortcut(['shift', 'right']),
-                  backgroundColor: const Color(0xFF3D2C00),
-                  textColor: const Color(0xFFFFCC00),
+                  label: '🔘 Tengah',
+                  onTap: () => widget.service.sendMouseClick(button: 'middle', count: 1),
+                  backgroundColor: const Color(0xFF2D3748),
+                  textColor: const Color(0xFFE2E8F0),
                 ),
                 _buildKeyButton(
-                  label: 'Sel ↑',
-                  onTap: () => widget.service.sendShortcut(['shift', 'up']),
-                  backgroundColor: const Color(0xFF3D2C00),
-                  textColor: const Color(0xFFFFCC00),
-                ),
-                _buildKeyButton(
-                  label: 'Sel ↓',
-                  onTap: () => widget.service.sendShortcut(['shift', 'down']),
-                  backgroundColor: const Color(0xFF3D2C00),
-                  textColor: const Color(0xFFFFCC00),
+                  label: '🖱️ Kanan',
+                  onTap: () => widget.service.sendMouseClick(button: 'right', count: 1),
+                  backgroundColor: const Color(0xFF4C1D95),
+                  textColor: const Color(0xFFDDD6FE),
                 ),
               ],
             ),

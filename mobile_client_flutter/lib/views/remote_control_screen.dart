@@ -26,12 +26,14 @@ class _RemoteControlScreenState extends State<RemoteControlScreen> {
   bool _showDevKeypad = true;
   bool _showHeader = false; // Default false for 100% immersive full screen
   bool _isFloatingMenuExpanded = false; // Collapsed by default so it does NOT block the screen!
-  
+  bool _isZoomMode = false; // v2.0: Interactive Zoom In/Out & Pan Screen Mode
   TouchpadMode _touchMode = TouchpadMode.directTouch;
+  
+  final TransformationController _transformationController = TransformationController();
   ScreenQualityMode _qualityMode = ScreenQualityMode.hd720p;
   
   // Draggable floating button position
-  Offset _fabPosition = const Offset(16, 16); // Top-right offset relative to right edge
+  final Offset _fabPosition = const Offset(16, 16); // Top-right offset relative to right edge
 
   @override
   void initState() {
@@ -112,6 +114,7 @@ class _RemoteControlScreenState extends State<RemoteControlScreen> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _focusNode.dispose();
     _textController.dispose();
+    _transformationController.dispose();
     widget.service.dispose();
     super.dispose();
   }
@@ -413,16 +416,85 @@ class _RemoteControlScreenState extends State<RemoteControlScreen> {
           Expanded(
             child: Stack(
               children: [
-                // SCREEN STREAM
-                ScreenViewer(service: widget.service),
-
-                // VIRTUAL TOUCHPAD GESTURES
-                Positioned.fill(
-                  child: VirtualTouchpad(
-                    service: widget.service,
-                    mode: _touchMode,
+                // SCREEN STREAM WITH INTERACTIVE ZOOM & PAN (v2.0)
+                InteractiveViewer(
+                  transformationController: _transformationController,
+                  panEnabled: _isZoomMode,
+                  scaleEnabled: _isZoomMode,
+                  minScale: 1.0,
+                  maxScale: 6.0,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox.expand(
+                    child: ScreenViewer(service: widget.service),
                   ),
                 ),
+
+                // VIRTUAL TOUCHPAD GESTURES (Active in Cursor Mode)
+                if (!_isZoomMode)
+                  Positioned.fill(
+                    child: VirtualTouchpad(
+                      service: widget.service,
+                      mode: _touchMode,
+                      transformationController: _transformationController,
+                    ),
+                  ),
+
+                // FLOATING ZOOM MODE ACTIVE BANNER (v2.0)
+                if (_isZoomMode)
+                  Positioned(
+                    top: 16,
+                    left: 20,
+                    right: 20,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0D1117).withValues(alpha: 0.94),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFFFB800), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.zoom_in_rounded, color: Color(0xFFFFB800), size: 18),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Mode Zoom & Geser Layar",
+                              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 10),
+                            InkWell(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  _transformationController.value = Matrix4.identity();
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  "Reset 1.0x",
+                                  style: TextStyle(color: Color(0xFF00F0FF), fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
 
                 // HIDDEN TEXT FIELD FOR NATIVE SOFT KEYBOARD WITH DELTA ENGINE
                 Positioned(
@@ -520,10 +592,25 @@ class _RemoteControlScreenState extends State<RemoteControlScreen> {
                               ),
                               const SizedBox(width: 4),
 
-                              // 5. TOUCH MODE TOGGLE (Direct Touch vs Trackpad)
+                              // 5. ZOOM & PAN MODE TOGGLE (v2.0: Perbesar, Perkecil & Geser Layar)
+                              _buildFloatingIconBtn(
+                                icon: Icons.zoom_in_rounded,
+                                tooltip: _isZoomMode ? "Kembali ke Mode Kursor" : "Mode Zoom & Geser Layar",
+                                isActive: _isZoomMode,
+                                activeColor: const Color(0xFFFFB800),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _isZoomMode = !_isZoomMode;
+                                  });
+                                },
+                              ),
+                              const SizedBox(width: 4),
+
+                              // 6. TOUCH MODE TOGGLE (Direct Touch vs Virtual Trackpad)
                               _buildFloatingIconBtn(
                                 icon: _touchMode == TouchpadMode.directTouch ? Icons.touch_app_rounded : Icons.mouse_rounded,
-                                tooltip: _touchMode == TouchpadMode.directTouch ? "Mode Sentuh Langsung (Tap)" : "Mode Trackpad Mouse",
+                                tooltip: _touchMode == TouchpadMode.directTouch ? "Mode Sentuh Langsung (Tap Layar)" : "Mode Trackpad Mouse (Geser Kursor)",
                                 isActive: _touchMode == TouchpadMode.relativeTrackpad,
                                 activeColor: const Color(0xFFFFCC00),
                                 onTap: () {
@@ -533,11 +620,34 @@ class _RemoteControlScreenState extends State<RemoteControlScreen> {
                                         ? TouchpadMode.relativeTrackpad
                                         : TouchpadMode.directTouch;
                                   });
+                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Row(
+                                        children: [
+                                          Icon(
+                                            _touchMode == TouchpadMode.directTouch ? Icons.touch_app_rounded : Icons.mouse_rounded,
+                                            color: const Color(0xFF00F0FF),
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            _touchMode == TouchpadMode.directTouch
+                                                ? "Mode Sentuh Langsung: Tap layar PC"
+                                                : "Mode Trackpad Mouse: Geser kursor seperti touchpad laptop",
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: const Color(0xFF161B22),
+                                      duration: const Duration(seconds: 2),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
                                 },
                               ),
                               const SizedBox(width: 4),
 
-                              // 6. FULLSCREEN / HEADER TOGGLE
+                              // 7. FULLSCREEN / HEADER TOGGLE
                               _buildFloatingIconBtn(
                                 icon: _showHeader ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
                                 tooltip: "Toggle Layar Penuh",
@@ -552,7 +662,7 @@ class _RemoteControlScreenState extends State<RemoteControlScreen> {
                               ),
                               const SizedBox(width: 4),
 
-                              // 7. COLLAPSE / MINIMIZE BUTTON (Menutup Menu Agar Tidak Menghalangi Layar)
+                              // 8. COLLAPSE / MINIMIZE BUTTON (Menutup Menu Agar Tidak Menghalangi Layar)
                               InkWell(
                                 onTap: () {
                                   HapticFeedback.lightImpact();

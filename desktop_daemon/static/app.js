@@ -29,10 +29,12 @@
   const pingCounter = document.getElementById('pingCounter');
   
   const toggleKeyboardBtn = document.getElementById('toggleKeyboardBtn');
+  const toggleZoomBtn = document.getElementById('toggleZoomBtn');
   const toggleEditModeBtn = document.getElementById('toggleEditModeBtn');
   const selectionRow = document.getElementById('selectionRow');
   const settingsBtn = document.getElementById('settingsBtn');
   const disconnectBtn = document.getElementById('disconnectBtn');
+  const screenContainer = document.getElementById('screenContainer');
   const settingsModal = document.getElementById('settingsModal');
   const closeSettingsBtn = document.getElementById('closeSettingsBtn');
   const resSelect = document.getElementById('resSelect');
@@ -227,7 +229,7 @@
     resetConnectBtn();
   }
 
-  // GESTURE & TOUCHPAD CONTROLLER (Throttled for zero lag & maximum fluidness)
+  // GESTURE & TOUCHPAD CONTROLLER (With Zoom & Pan Mode v2.0)
   let touchStartX = 0;
   let touchStartY = 0;
   let lastTouchX = 0;
@@ -235,6 +237,35 @@
   let touchStartTime = 0;
   let isMultiTouch = false;
   let lastMouseMoveTime = 0;
+  let initialPinchDistance = 0;
+
+  // Zoom & Pan state
+  let isZoomMode = false;
+  let zoomScale = 1.0;
+  let panX = 0;
+  let panY = 0;
+
+  function updateTransform() {
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+    canvas.style.transformOrigin = '0 0';
+  }
+
+  if (toggleZoomBtn) {
+    toggleZoomBtn.addEventListener('click', () => {
+      isZoomMode = !isZoomMode;
+      if (isZoomMode) {
+        toggleZoomBtn.classList.add('active');
+      } else {
+        toggleZoomBtn.classList.remove('active');
+      }
+    });
+  }
+
+  function getPinchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
 
   touchSurface.addEventListener('touchstart', (e) => {
     e.preventDefault();
@@ -250,6 +281,8 @@
       lastTouchY = touchStartY;
     } else if (touches.length === 2) {
       isMultiTouch = true;
+      initialPinchDistance = getPinchDistance(touches);
+      lastTouchX = (touches[0].clientX + touches[1].clientX) / 2;
       lastTouchY = (touches[0].clientY + touches[1].clientY) / 2;
     }
   });
@@ -260,15 +293,42 @@
     const rect = touchSurface.getBoundingClientRect();
     const now = performance.now();
 
+    if (isZoomMode) {
+      if (touches.length === 1) {
+        // Pan viewport
+        const currentX = touches[0].clientX - rect.left;
+        const currentY = touches[0].clientY - rect.top;
+        panX += (currentX - lastTouchX);
+        panY += (currentY - lastTouchY);
+        lastTouchX = currentX;
+        lastTouchY = currentY;
+        updateTransform();
+      } else if (touches.length === 2) {
+        // Pinch zoom
+        const dist = getPinchDistance(touches);
+        if (initialPinchDistance > 0) {
+          const factor = dist / initialPinchDistance;
+          zoomScale = Math.max(1.0, Math.min(5.0, zoomScale * factor));
+          initialPinchDistance = dist;
+          updateTransform();
+        }
+      }
+      return;
+    }
+
     if (touches.length === 1 && !isMultiTouch) {
       // 16ms throttle (~60fps) prevents packet congestion while feeling instant
       if (now - lastMouseMoveTime >= 15) {
         lastMouseMoveTime = now;
-        const currentX = touches[0].clientX - rect.left;
-        const currentY = touches[0].clientY - rect.top;
+        const rawX = touches[0].clientX - rect.left;
+        const rawY = touches[0].clientY - rect.top;
+
+        // Account for current zoom & pan transformation
+        const transformedX = (rawX - panX) / zoomScale;
+        const transformedY = (rawY - panY) / zoomScale;
         
-        const nx = currentX / rect.width;
-        const ny = currentY / rect.height;
+        const nx = transformedX / rect.width;
+        const ny = transformedY / rect.height;
 
         sendControl({
           type: 'mouse_move',
@@ -276,8 +336,8 @@
           ny: Math.max(0, Math.min(1.0, ny))
         });
 
-        lastTouchX = currentX;
-        lastTouchY = currentY;
+        lastTouchX = rawX;
+        lastTouchY = rawY;
       }
     } else if (touches.length === 2) {
       // 2-finger scroll in code editor
@@ -298,6 +358,8 @@
 
   touchSurface.addEventListener('touchend', (e) => {
     e.preventDefault();
+    if (isZoomMode) return;
+
     const duration = performance.now() - touchStartTime;
 
     // Detect Taps (Duration < 250ms)
@@ -343,9 +405,13 @@
       const key = btn.dataset.key;
       const shortcut = btn.dataset.shortcut;
       const symbol = btn.dataset.type;
+      const mouse = btn.dataset.mouse;
 
-      if (shortcut) {
-        // Direct shortcut like ctrl,a or shift,left or ctrl,c
+      if (mouse) {
+        // Mouse click: left, middle, right
+        sendControl({ type: 'mouse_click', button: mouse, count: 1 });
+      } else if (shortcut) {
+        // Direct shortcut like ctrl,a or ctrl,c
         const keysArr = shortcut.split(',');
         sendControl({ type: 'shortcut', keys: keysArr });
       } else if (key) {

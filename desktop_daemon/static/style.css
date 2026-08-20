@@ -358,17 +358,24 @@ body, html {
   color: #000;
 }
 
-.key-btn.sel-nav {
-  background: rgba(255, 170, 0, 0.2);
-  border-color: rgba(255, 170, 0, 0.4);
-  color: #ffc453;
+.key-btn.mouse-btn {
+  background: rgba(30, 144, 255, 0.2);
+  border-color: rgba(30, 144, 255, 0.4);
+  color: #90cdf4;
   font-size: 0.76rem;
-  min-width: 48px;
+  min-width: 58px;
 }
 
-.key-btn.sel-nav:active {
-  background: #ffc453;
+.key-btn.mouse-btn:active {
+  background: #90cdf4;
   color: #000;
+}
+
+.btn-icon.active {
+  background: rgba(255, 184, 0, 0.3) !important;
+  color: #ffb800 !important;
+  border: 1px solid #ffb800;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.5);
 }
 
 .key-btn.action {

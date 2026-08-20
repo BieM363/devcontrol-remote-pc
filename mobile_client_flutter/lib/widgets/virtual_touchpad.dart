@@ -7,11 +7,13 @@ enum TouchpadMode { directTouch, relativeTrackpad }
 class VirtualTouchpad extends StatefulWidget {
   final DevControlService service;
   final TouchpadMode mode;
+  final TransformationController? transformationController;
 
   const VirtualTouchpad({
     super.key,
     required this.service,
     this.mode = TouchpadMode.directTouch,
+    this.transformationController,
   });
 
   @override
@@ -27,9 +29,15 @@ class _VirtualTouchpadState extends State<VirtualTouchpad> {
   double _scrollAccumulator = 0;
   DateTime? _lastMouseMoveTime;
 
-  // Calculates normalized (0.0 - 1.0) coordinates accounting for letterbox aspect ratio
+  // Calculates normalized (0.0 - 1.0) coordinates accounting for letterbox aspect ratio and zoom transformation
   (double, double) _getNormalizedCoords(Offset localPos, Size containerSize) {
     if (containerSize.width <= 0 || containerSize.height <= 0) return (0.0, 0.0);
+
+    // Map screen viewport coordinate to unscaled content coordinate when zoomed
+    Offset contentPos = localPos;
+    if (widget.transformationController != null) {
+      contentPos = widget.transformationController!.toScene(localPos);
+    }
 
     final double screenW = (widget.service.screenWidth > 0 ? widget.service.screenWidth : 1920).toDouble();
     final double screenH = (widget.service.screenHeight > 0 ? widget.service.screenHeight : 1080).toDouble();
@@ -52,14 +60,14 @@ class _VirtualTouchpadState extends State<VirtualTouchpad> {
       offsetY = (containerSize.height - renderedH) / 2;
     }
 
-    final double nx = ((localPos.dx - offsetX) / renderedW).clamp(0.0, 1.0);
-    final double ny = ((localPos.dy - offsetY) / renderedH).clamp(0.0, 1.0);
+    final double nx = ((contentPos.dx - offsetX) / renderedW).clamp(0.0, 1.0);
+    final double ny = ((contentPos.dy - offsetY) / renderedH).clamp(0.0, 1.0);
     return (nx, ny);
   }
 
   void _sendThrottledMouseMove(double nx, double ny) {
     final now = DateTime.now();
-    if (_lastMouseMoveTime == null || now.difference(_lastMouseMoveTime!).inMilliseconds > 15) {
+    if (_lastMouseMoveTime == null || now.difference(_lastMouseMoveTime!).inMilliseconds >= 8) {
       _lastMouseMoveTime = now;
       widget.service.sendMouseMove(nx, ny);
     }
